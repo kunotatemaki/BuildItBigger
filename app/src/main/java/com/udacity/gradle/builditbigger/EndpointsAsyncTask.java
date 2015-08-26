@@ -14,8 +14,11 @@ import java.io.IOException;
  * Created by iRuler on 25/8/15.
  */
 public class EndpointsAsyncTask extends AsyncTask<MainActivity, Void, String> {
+    public static String ASYNCTASK_NOT_OK = "com.udacity.gradle.builditbigger.endpointasynctask.not_ok";
     private static MyApi myApiService = null;
     private MainActivity mainActivity;
+    private EndpointsAsyncTaskListener mListener = null;
+
 
     @Override
     protected String doInBackground(MainActivity... params) {
@@ -52,7 +55,32 @@ public class EndpointsAsyncTask extends AsyncTask<MainActivity, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        mainActivity.hideRefreshLayoutSwipeProgress();
-        mainActivity.showJoke(result);
+        if(this.mListener != null){
+            if(result.equals("")){
+                this.mListener.onComplete(ASYNCTASK_NOT_OK);
+            }else {
+                this.mListener.onComplete(result);
+            }
+        }
+        if(mainActivity != null) {
+            mainActivity.hideRefreshLayoutSwipeProgress();
+            mainActivity.showJoke(result);
+        }
+    }
+
+    @Override
+    protected void onCancelled(){
+        if(this.mListener != null){
+            this.mListener.onComplete(ASYNCTASK_NOT_OK);
+        }
+    }
+
+    public EndpointsAsyncTask setListener(EndpointsAsyncTaskListener listener) {
+        this.mListener = listener;
+        return this;
+    }
+
+    public static interface EndpointsAsyncTaskListener {
+        public void onComplete(String result);
     }
 }

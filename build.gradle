@@ -17,3 +17,33 @@ allprojects {
         jcenter()
     }
 }
+
+task runTestBuilItBigger{
+    dependsOn = ["stopEndpoint", "startEndpoint", "runConnectedTest"]
+    evaluationDependsOn ":backend"
+
+    project(":backend"){
+        appengine{
+            daemon true
+        }
+    }
+
+    doLast{
+        println "Job Done"
+    }
+
+}
+
+task runConnectedTest{
+    dependsOn "app:connectedCheck"
+    mustRunAfter "startEndpoint"
+}
+
+task startEndpoint{
+    dependsOn "backend:appengineRun"
+}
+
+task stopEndpoint{
+    dependsOn "backend:appengineStop"
+    mustRunAfter startEndpoint
+}
