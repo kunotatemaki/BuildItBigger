@@ -1,5 +1,6 @@
 package com.udacity.gradle.builditbigger;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.example.iruler.myapplication.backend.myApi.MyApi;
@@ -7,21 +8,22 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.rukiasoft.rulerapps.myjokedisplay.JokeDisplayActivity;
 
 import java.io.IOException;
 
 /**
  * Created by iRuler on 25/8/15.
  */
-public class EndpointsAsyncTask extends AsyncTask<MainActivity, Void, String> {
+public class EndpointsAsyncTask extends AsyncTask<RefreshActivity, Void, String> {
     public static String ASYNCTASK_NOT_OK = "com.udacity.gradle.builditbigger.endpointasynctask.not_ok";
     private static MyApi myApiService = null;
-    private MainActivity mainActivity;
+    private RefreshActivity refreshActivity;
     private EndpointsAsyncTaskListener mListener = null;
 
 
     @Override
-    protected String doInBackground(MainActivity... params) {
+    protected String doInBackground(RefreshActivity... params) {
         if(myApiService == null) {  // Only do this once
             MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
                     new AndroidJsonFactory(), null)
@@ -40,31 +42,35 @@ public class EndpointsAsyncTask extends AsyncTask<MainActivity, Void, String> {
             myApiService = builder.build();
         }
 
-        mainActivity = params[0];
+        refreshActivity = params[0];
         try {
-            Thread.sleep(5000);
+            Thread.sleep(5000); //just to show refresh indicator a few more seconds
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         try {
             return myApiService.tellJoke().execute().getJoke();
         } catch (IOException e) {
-            return e.getMessage();
+            return ASYNCTASK_NOT_OK;
         }
     }
 
     @Override
     protected void onPostExecute(String result) {
         if(this.mListener != null){
-            if(result.equals("")){
+            if(result.equals("") || result.equals(ASYNCTASK_NOT_OK)){
                 this.mListener.onComplete(ASYNCTASK_NOT_OK);
             }else {
                 this.mListener.onComplete(result);
             }
         }
-        if(mainActivity != null) {
-            mainActivity.hideRefreshLayoutSwipeProgress();
-            mainActivity.showJoke(result);
+        if(refreshActivity != null) {
+            refreshActivity.hideRefreshLayoutSwipeProgress();
+            if(result.equals(ASYNCTASK_NOT_OK)){
+                result = refreshActivity.getResources().getString(R.string.no_response);
+            }
+            showJoke(result);
+
         }
     }
 
@@ -82,5 +88,11 @@ public class EndpointsAsyncTask extends AsyncTask<MainActivity, Void, String> {
 
     public static interface EndpointsAsyncTaskListener {
         public void onComplete(String result);
+    }
+
+    public void showJoke(String result) {
+        Intent intent = new Intent(refreshActivity, JokeDisplayActivity.class);
+        intent.putExtra(JokeDisplayActivity.JOKE_AS_INTENT, result);
+        refreshActivity.startActivity(intent);
     }
 }

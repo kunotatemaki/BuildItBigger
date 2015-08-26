@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.udacity.gradle.builditbigger"
-        minSdkVersion 19
+        minSdkVersion 10
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -17,12 +17,29 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        free {
+            applicationId "com.udacity.gradle.builditbigger.free"
+            minSdkVersion 10
+            targetSdkVersion 23
+            versionCode 1
+            versionName '1.0'
+        }
+        paid {
+            applicationId "com.udacity.gradle.builditbigger.paid"
+            minSdkVersion 10
+            targetSdkVersion 23
+            versionCode 1
+            versionName '1.0'
+        }
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.0.0'
-    compile 'com.google.android.gms:play-services-ads:7.8.0'
+    freeCompile 'com.google.android.gms:play-services-ads:7.8.0'
     compile project(path: ':backend', configuration: 'android-endpoints')
     compile project(':myjokedisplay')
     compile 'com.android.support:design:23.0.0'
